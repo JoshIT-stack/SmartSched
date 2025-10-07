@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGN UP - SMARTSCHED</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #93c5fd, #e0e7ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .signup-box {
+      background: white;
+      width: 380px;
+      padding: 30px 35px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #2563eb;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      margin-top: 12px;
+      margin-bottom: 5px;
+      color: #374151;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 5px rgba(37, 99, 235, 0.2);
+    }
+
+    hr {
+      margin: 25px 0;
+      border: none;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    h3 {
+      color: #2563eb;
+      margin-bottom: 5px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #6b7280;
+      text-align: left;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    p {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    ::placeholder {
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+
+<body>
+  <div class="signup-box">
+    <h2>Create an Account</h2>
+    <form>
+      <label for="new-username">Username</label>
+      <input type="text" id="new-username" name="new-username" placeholder="Enter your username" required>
+
+      <label for="new-password">Password</label>
+      <input type="password" id="new-password" name="new-password" placeholder="Enter your password" required>
+
+      <label for="confirm-password">Confirm Password</label>
+      <input type="password" id="confirm-password" name="confirm-password" placeholder="Re-enter your password" required>
+
+      <hr>
+
+      <h3>Personal Recovery Questions</h3>
+      <p class="note">Please answer all 5 questions. These will help you recover your account if you forget your password.</p>
+
+      <label for="q1">1. What is your mother’s maiden name?</label>
+      <input type="text" id="q1" name="q1" placeholder="Answer" required>
+
+      <label for="q2">2. What was the name of your first pet?</label>
+      <input type="text" id="q2" name="q2" placeholder="Answer" required>
+
+      <label for="q3">3. What city were you born in?</label>
+      <input type="text" id="q3" name="q3" placeholder="Answer" required>
+
+      <label for="q4">4. What is your favorite color?</label>
+      <input type="text" id="q4" name="q4" placeholder="Answer" required>
+
+      <label for="q5">5. What is your favorite food?</label>
+      <input type="text" id="q5" name="q5" placeholder="Answer" required>
+
+      <button type="submit">Sign Up</button>
+
+      <p>Already have an account? <a href="smartsched.html">Log in</a></p>
+    </form>
+  </div>
+</body>
+</html>
