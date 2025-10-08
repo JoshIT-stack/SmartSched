@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Records</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      width: 360px;
+    }
+
+    h2 {
+      color: #2563eb;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    .search-bar:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .record-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .record-list li {
+      background-color: #e0e7ff;
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: left;
+      transition: background-color 0.3s;
+    }
+
+    .record-list li:hover {
+      background-color: #c7d2fe;
+    }
+
+    .record-name {
+      font-weight: bold;
+      color: #1e3a8a;
+      margin-bottom: 4px;
+    }
+
+    .record-role {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .record-id {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .action-btn {
+      display: block;
+      margin: 25px auto 0;
+      padding: 10px 15px;
+      background-color: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      text-align: center;
+      width: fit-content;
+    }
+
+    .action-btn:hover {
+      background-color: #1e40af;
+    }
+
+
+    .scroll-box {
+  max-height: 300px; /* Adjust height as needed */
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 5px; /* Prevent scrollbar overlap */
+}
+
+/* Optional: style scrollbar for modern look */
+.scroll-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-box::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+  border-radius: 4px;
+}
+
+.scroll-box::-webkit-scrollbar-track {
+  background-color: #f1f5f9;
+}
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Employee Records</h2>
+
+    <input type="text" placeholder="Search employee..." class="search-bar" />
+
+ <div class="scroll-box">
+  <ul class="record-list">
+    <li>
+      <div class="record-name">Juan Dela Cruz</div>
+      <div class="record-role">Employee</div>
+      <div class="record-id">ID: 001</div>
+    </li>
+    <!-- Add more records here -->
+         <li>
+      <div class="record-name">Juan Dela Cruz</div>
+      <div class="record-role">Employee</div>
+      <div class="record-id">ID: 001</div>
+    </li>
+        <li>
+      <div class="record-name">Juan Dela Cruz</div>
+      <div class="record-role">Employee</div>
+      <div class="record-id">ID: 001</div>
+    </li>
+        <li>
+      <div class="record-name">Juan Dela Cruz</div>
+      <div class="record-role">Employee</div>
+      <div class="record-id">ID: 001</div>
+    </li>
+        <li>
+      <div class="record-name">Juan Dela Cruz</div>
+      <div class="record-role">Employee</div>
+      <div class="record-id">ID: 001</div>
+    </li>
+  </ul>
+</div>
+
+    <a href="dashboard.html" class="action-btn">Back to Dashboard</a>
+  </div>
+</body>
+</html>
