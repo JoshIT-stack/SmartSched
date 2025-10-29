@@ -2,6 +2,7 @@ public class User{
     private String username;
     private String password;
     private String confirmPassword;
+    private String role;
     private String q1;
     private String q2;
     private String q3;
@@ -10,11 +11,12 @@ public class User{
 
     //constructors
     public User(String username, String password, String confirmPassword, 
-    String q1,  String q2,  String q3,  String q4, String q5)
+    String q1,  String q2,  String q3,  String q4, String q5,  String role)
     {
         this.username=username;
         this.password=password;
         this.confirmPassword=confirmPassword;
+        this.role = role;
         this.q1=q1;
         this.q2=q2;
         this.q3=q3;
@@ -56,4 +58,11 @@ public class User{
         return q5;
     }
 
+    public void setRole(String role){
+        this.role = role;
+    }
+
+    public String getRole(){
+        return role;
+    }
 }
