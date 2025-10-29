@@ -1,27 +1,43 @@
-public class SignupLogic {
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 
-    // Simulate account creation
-    public String register(User user) {
+@WebServlet("/signup")
+public class SignupServlet extends HttpServlet {
+  
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 1. Get values from HTML form
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
+        String q1 = request.getParameter("q1");
+        String q2 = request.getParameter("q2");
+        String q3 = request.getParameter("q3");
+        String q4 = request.getParameter("q4");
+        String q5 = request.getParameter("q5");
 
-        // Step 1: Check if username and password fields are not empty
-        if (user.getUserName().isEmpty() || user.getPassword().isEmpty()) {
-            return "Username and password cannot be empty.";
-        }
 
-        // Step 2: Confirm password match
-        if (!user.getPassword().equals(user.getConfirmPassword())) {
-            return "Passwords do not match.";
-        }
+        // 2. (Optional) save to your Login class for now
+        User user = new User(username, password, confirmPassword, q1, q2, q3, q4, q5, "employee");
+        SignupLogic logic = new SignupLogic();
+        String result = logic.register(user);
 
-        // Step 3: Check recovery questions
-        if (user.getQ1().isEmpty() || user.getQ2().isEmpty() ||
-            user.getQ3().isEmpty() || user.getQ4().isEmpty() ||
-            user.getQ5().isEmpty()) {
-            return "All recovery questions must be answered.";
-        }
 
-        // Step 4: If all checks passed, simulate saving user
-        // (in future, this will go to database)
-        return "Signup successful! Account created for user: " + user.getUserName();
+        // 3. Later: save to database
+        // For now, just show confirmation
+      // response.setContentType("text/html");
+      // response.sendRedirect("signup-succes.html?username=" + URLEncoder.encode(username, "UTF-8"));
+
+       request.setAttribute("result", result);
+      // request.getRequestDispatcher("signup-succes.html").forward(request, response);
+       response.sendRedirect("signup-succes.html?username=" + URLEncoder.encode(user.getUserName(), "UTF-8"));
+
+
+
     }
 }
