@@ -6,13 +6,29 @@
   <title>SmartSched Dashboard</title>
   <style>
     :root {
+      /* LIGHT THEME */
       --primary: #4267b2;
       --primary-light: #5b84d7;
       --bg: #eef2f7;
       --text: #333;
       --card: #fff;
       --hover: #cddfff;
-      --sidebar-width: 240px;
+      --calendar-text: #1a1a1a;
+      --mode-hover: rgba(255, 255, 255, 0.2);
+      --border: #c5c5c5;
+    }
+
+    body.dark {
+      /* DARK THEME */
+      --primary: #5b84d7;
+      --primary-light: #7299e2;
+      --bg: #121212;
+      --text: #e2e2e2;
+      --card: #1e1e1e;
+      --hover: #2a2a2a;
+      --calendar-text: #f0f0f0;
+      --mode-hover: rgba(255, 255, 255, 0.1);
+      --border: #444;
     }
 
     * {
@@ -29,6 +45,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .dashboard {
@@ -38,18 +55,21 @@
       display: flex;
       background-color: var(--card);
       border-radius: 10px;
+      border: 1px solid var(--border);
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       overflow: hidden;
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     .sidebar {
-      width: var(--sidebar-width);
+      width: 240px;
       background-color: var(--primary);
       color: white;
       padding: 25px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: background-color 0.3s;
     }
 
     .sidebar h2 {
@@ -88,26 +108,29 @@
     .mode-toggle {
       text-align: center;
       font-size: 0.9rem;
-      opacity: 0.8;
       margin-top: auto;
       padding: 10px;
       cursor: pointer;
       border-radius: 6px;
-      transition: background-color 0.3s;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: background-color 0.3s, transform 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .mode-toggle:hover {
-      background-color: rgba(255, 255, 255, 0.2);
+      background-color: var(--mode-hover);
+      transform: scale(1.05);
     }
 
     .main-content {
       flex: 1;
       padding: 25px;
-      background-color: #f7f9fc;
+      background-color: var(--bg);
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
+      transition: background-color 0.3s;
     }
 
     .main-content h2 {
@@ -120,7 +143,9 @@
       background-color: var(--card);
       border-radius: 10px;
       padding: 15px;
+      border: 1px solid var(--border);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     .calendar-header {
@@ -137,11 +162,12 @@
       padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s, transform 0.2s;
     }
 
     .nav-btn:hover {
       background-color: var(--primary-light);
+      transform: scale(1.05);
     }
 
     .calendar-grid {
@@ -149,6 +175,8 @@
       grid-template-columns: repeat(7, 1fr);
       gap: 6px;
       text-align: center;
+      color: var(--calendar-text);
+      transition: color 0.3s;
     }
 
     .day-name {
@@ -156,6 +184,12 @@
       background-color: #dbe4ff;
       padding: 8px;
       border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    body.dark .day-name {
+      background-color: #2a2a2a;
+      color: #f0f0f0;
     }
 
     .day,
@@ -166,7 +200,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background-color 0.2s;
+      border: 1px solid var(--border);
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
     }
 
     .day:hover {
@@ -174,7 +209,6 @@
       cursor: pointer;
     }
 
-    /* ✅ Blue highlight for today's date */
     .today {
       background-color: #cfe2ff;
       border: 2px solid #5b84d7;
@@ -182,27 +216,35 @@
       color: #1a1a1a;
     }
 
+    body.dark .today {
+      background-color: #2f4b8a;
+      border-color: #7299e2;
+      color: #ffffff;
+    }
+
     @media (max-width: 768px) {
       .dashboard {
         flex-direction: column;
         height: auto;
       }
+
       .sidebar {
         width: 100%;
         flex-direction: row;
         justify-content: space-around;
       }
+
       .sidebar-links {
         flex-direction: row;
         gap: 5px;
       }
+
       .calendar {
         width: 100%;
       }
     }
   </style>
 </head>
-
 <body>
   <div class="dashboard">
     <aside class="sidebar">
@@ -226,7 +268,6 @@
           <h3 id="monthYear">October 2025</h3>
           <button class="nav-btn" id="nextMonth">&gt;</button>
         </div>
-
         <div class="calendar-grid" id="calendarGrid">
           <div class="day-name">Sun</div>
           <div class="day-name">Mon</div>
@@ -246,6 +287,7 @@
     const prev = document.getElementById('prevMonth');
     const next = document.getElementById('nextMonth');
     const modeToggle = document.getElementById('modeToggle');
+    const body = document.body;
 
     let date = new Date();
 
@@ -262,7 +304,6 @@
         year: 'numeric'
       });
 
-      // ✅ Get today's date for highlighting
       const today = new Date();
       const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
@@ -277,7 +318,6 @@
         day.classList.add('day');
         day.textContent = d;
 
-        // ✅ Highlight today's date
         if (isCurrentMonth && d === today.getDate()) {
           day.classList.add('today');
         }
@@ -296,11 +336,9 @@
       renderCalendar();
     };
 
-    let darkMode = false;
     modeToggle.onclick = () => {
-      darkMode = !darkMode;
-      document.body.style.backgroundColor = darkMode ? '#121212' : '#eef2f7';
-      document.body.style.color = darkMode ? '#e2e2e2' : '#333';
+      body.classList.toggle('dark');
+      const darkMode = body.classList.contains('dark');
       modeToggle.textContent = darkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
     };
 
