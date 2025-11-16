@@ -8,3 +8,4 @@ btn.onclick = function () {
 function closeModal() {
   modal.style.display = "none";
 }
+///hehe
