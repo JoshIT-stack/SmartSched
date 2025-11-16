@@ -16,12 +16,12 @@ public class User{
         this.username=username;
         this.password=password;
         this.confirmPassword=confirmPassword;
-        this.role = role;
         this.q1=q1;
         this.q2=q2;
         this.q3=q3;
         this.q4=q4;
         this.q5=q5;
+        this.role = role;
     }
 
 
