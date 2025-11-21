@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Scheduler - Event History</title>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -96,7 +95,7 @@
 
         .events-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjusted min-width for cleaner look */
             gap: 25px;
         }
 
@@ -106,6 +105,9 @@
             box-shadow: var(--box-shadow);
             overflow: hidden;
             transition: transform 0.3s ease;
+            /* Minimal card size */
+            display: flex;
+            flex-direction: column;
         }
 
         .event-card:hover {
@@ -113,30 +115,32 @@
         }
 
         .event-header {
-            padding: 20px;
+            padding: 15px 20px; /* Reduced padding */
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center; /* Center items vertically */
         }
 
         .event-title {
-            font-size: 20px;
+            font-size: 18px; /* Slightly smaller font */
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 0px; /* Removed margin */
             color: var(--primary);
         }
 
         .event-date {
             color: var(--gray);
-            font-size: 14px;
+            font-size: 13px; /* Slightly smaller font */
+            margin-top: 5px;
         }
 
         .event-status {
-            padding: 5px 12px;
+            padding: 5px 10px; /* Reduced padding */
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px; /* Smaller font */
             font-weight: 600;
+            white-space: nowrap; /* Keep status on one line */
         }
 
         .status-completed {
@@ -149,44 +153,33 @@
             color: var(--danger);
         }
 
-        .event-body {
-            padding: 20px;
-        }
+        /* Removed .event-body and its child styles as they are no longer needed */
+        /* .event-body { display: none; } */
 
-        .event-detail {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .event-detail i {
-            width: 20px;
-            margin-right: 10px;
-            color: var(--primary);
-        }
-
-        .event-description {
-            margin-top: 15px;
-            color: var(--gray);
-            font-size: 14px;
-        }
 
         .event-actions {
-            padding: 15px 20px;
+            padding: 10px 20px; /* Reduced padding */
             background-color: #f8f9fa;
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            margin-top: auto; /* Push actions to the bottom */
+            border-top: 1px solid #eee;
         }
 
         .btn-outline {
-            padding: 8px 15px;
+            padding: 6px 12px; /* Reduced padding */
             border: 1px solid var(--primary);
             border-radius: var(--border-radius);
             background: transparent;
             color: var(--primary);
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 13px; /* Smaller font */
+        }
+
+        .btn-outline i {
+            margin-right: 5px;
         }
 
         .btn-outline:hover {
@@ -218,13 +211,11 @@
     <div class="container">
 
         <header>
-    <h1><i class="fas fa-history"></i> Smart Scheduler - Event History</h1>
-    <!--<span>Viewing past events</span>-->
-    <!-- Back to Dashboard Button -->
-    <button class="btn-outline" onclick="goToDashboard()" style="margin-left: 20px;">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </button>
-    </header>
+            <h1><i class="fas fa-history"></i> Smart Scheduler - Event History</h1>
+            <button class="btn-outline" onclick="goToDashboard()" style="margin-left: 20px;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </header>
 
         <div class="controls">
             <div class="search-box">
@@ -261,7 +252,8 @@
         ];
 
         function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            // Updated options to include only date and time for a concise view
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             return new Date(dateString).toLocaleDateString('en-US', options);
         }
 
@@ -272,6 +264,7 @@
                 return;
             }
 
+            // MODIFICATION HERE: ONLY keeping event-header and event-actions
             container.innerHTML = eventsToRender.map(event => `
                 <div class="event-card">
                     <div class="event-header">
@@ -281,14 +274,7 @@
                         </div>
                         <div class="event-status status-${event.status}">${event.status.charAt(0).toUpperCase() + event.status.slice(1)}</div>
                     </div>
-
-                    <div class="event-body">
-                        <div class="event-detail"><i class="fas fa-clock"></i> Duration: ${event.duration}</div>
-                        ${event.location ? `<div class="event-detail"><i class="fas fa-map-marker-alt"></i> Location: ${event.location}</div>` : ''}
-                        <div class="event-detail"><i class="fas fa-tag"></i> Category: ${event.category}</div>
-                        <div class="event-description">${event.description}</div>
-                    </div>
-
+                    
                     <div class="event-actions">
                         <button class="btn-outline"><i class="fas fa-redo"></i> Reschedule</button>
                         <button class="btn-outline"><i class="fas fa-info-circle"></i> Details</button>
@@ -319,15 +305,9 @@
             document.getElementById("categoryFilter").addEventListener("change", filterEvents);
         });
 
-
-
         function goToDashboard() {
             window.location.href = "dashboard.html"; // adjust path if needed
         }
-
-
-
-
     </script>
 </body>
 </html>
