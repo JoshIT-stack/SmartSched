@@ -1,165 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Employee Records</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f1f5f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Scheduler - Event History</title>
 
-    .container {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      width: 360px;
-    }
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    h2 {
-      color: #2563eb;
-      margin-bottom: 20px;
-      text-align: center;
-    }
+    <style>
+        :root {
+            --primary: #4267b2;
+            --primary-light: #5b84d7;
+            --bg: #eef2f7;
+            --text: #333;
+            --card: #fff;
+            --gray: #6c757d;
+            --success: #4bb543;
+            --danger: #dc3545;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
 
-    .search-bar {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 14px;
-      box-sizing: border-box;
-      transition: border-color 0.3s;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif; /* match dashboard font */
+        }
 
-    .search-bar:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-    }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
 
-    .record-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-    .record-list li {
-      background-color: #e0e7ff;
-      margin-bottom: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      text-align: left;
-      transition: background-color 0.3s;
-    }
+        header {
+            background-color: var(--card);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .record-list li:hover {
-      background-color: #c7d2fe;
-    }
+        h1 {
+            color: var(--primary);
+            font-size: 28px;
+        }
 
-    .record-name {
-      font-weight: bold;
-      color: #1e3a8a;
-      margin-bottom: 4px;
-    }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
 
-    .record-role {
-      font-size: 13px;
-      color: #475569;
-    }
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
 
-    .record-id {
-      font-size: 12px;
-      color: #64748b;
-    }
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
 
-    .action-btn {
-      display: block;
-      margin: 25px auto 0;
-      padding: 10px 15px;
-      background-color: #2563eb;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      text-align: center;
-      width: fit-content;
-    }
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
 
-    .action-btn:hover {
-      background-color: #1e40af;
-    }
+        .filter-select {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: var(--card);
+            font-size: 16px;
+            min-width: 180px;
+        }
 
+        .events-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
 
-    .scroll-box {
-  max-height: 300px; /* Adjust height as needed */
-  overflow-y: auto;
-  margin-bottom: 20px;
-  padding-right: 5px; /* Prevent scrollbar overlap */
-}
+        .event-card {
+            background-color: var(--card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
 
-/* Optional: style scrollbar for modern look */
-.scroll-box::-webkit-scrollbar {
-  width: 6px;
-}
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
 
-.scroll-box::-webkit-scrollbar-thumb {
-  background-color: #94a3b8;
-  border-radius: 4px;
-}
+        .event-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
 
-.scroll-box::-webkit-scrollbar-track {
-  background-color: #f1f5f9;
-}
+        .event-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
 
+        .event-date {
+            color: var(--gray);
+            font-size: 14px;
+        }
 
-  </style>
+        .event-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background-color: rgba(75, 181, 67, 0.1);
+            color: var(--success);
+        }
+
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .event-body {
+            padding: 20px;
+        }
+
+        .event-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .event-detail i {
+            width: 20px;
+            margin-right: 10px;
+            color: var(--primary);
+        }
+
+        .event-description {
+            margin-top: 15px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .event-actions {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-outline {
+            padding: 8px 15px;
+            border: 1px solid var(--primary);
+            border-radius: var(--border-radius);
+            background: transparent;
+            color: var(--primary);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(66,103,178,0.1);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .events-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Employee Records</h2>
+    <div class="container">
 
-    <input type="text" placeholder="Search employee..." class="search-bar" />
+        <header>
+    <h1><i class="fas fa-history"></i> Smart Scheduler - Event History</h1>
+    <!--<span>Viewing past events</span>-->
+    <!-- Back to Dashboard Button -->
+    <button class="btn-outline" onclick="goToDashboard()" style="margin-left: 20px;">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+    </header>
 
- <div class="scroll-box">
-  <ul class="record-list">
-    <li>
-      <div class="record-name">Juan Dela Cruz</div>
-      <div class="record-role">Employee</div>
-      <div class="record-id">ID: 001</div>
-    </li>
-    <!-- Add more records here -->
-         <li>
-      <div class="record-name">Juan Dela Cruz</div>
-      <div class="record-role">Employee</div>
-      <div class="record-id">ID: 001</div>
-    </li>
-        <li>
-      <div class="record-name">Juan Dela Cruz</div>
-      <div class="record-role">Employee</div>
-      <div class="record-id">ID: 001</div>
-    </li>
-        <li>
-      <div class="record-name">Juan Dela Cruz</div>
-      <div class="record-role">Employee</div>
-      <div class="record-id">ID: 001</div>
-    </li>
-        <li>
-      <div class="record-name">Juan Dela Cruz</div>
-      <div class="record-role">Employee</div>
-      <div class="record-id">ID: 001</div>
-    </li>
-  </ul>
-</div>
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search events...">
+                <i class="fas fa-search"></i>
+            </div>
 
-    <a href="dashboard.html" class="action-btn">Back to Dashboard</a>
-  </div>
+            <select class="filter-select" id="statusFilter">
+                <option value="all">All Statuses</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+
+            <select class="filter-select" id="categoryFilter">
+                <option value="all">All Categories</option>
+                <option value="meeting">Meetings</option>
+                <option value="appointment">Appointments</option>
+                <option value="task">Tasks</option>
+                <option value="reminder">Reminders</option>
+            </select>
+        </div>
+
+        <div class="events-container" id="eventsContainer"></div>
+    </div>
+
+    <script>
+        const events = [
+            { id: 1, title: "Team Meeting", date: "2023-10-15T10:00:00", duration: "60 minutes", location: "Conference Room A", category: "meeting", status: "completed", description: "Weekly team sync to discuss project progress and upcoming tasks." },
+            { id: 2, title: "Project Deadline", date: "2023-10-10T17:00:00", duration: "All day", location: "Remote", category: "task", status: "completed", description: "Submit final project deliverables to the client." },
+            { id: 3, title: "Client Presentation", date: "2023-10-05T11:00:00", duration: "90 minutes", location: "Client Office", category: "meeting", status: "cancelled", description: "Product demo for potential client. Rescheduled due to client emergency." },
+            { id: 4, title: "Quarterly Review", date: "2023-09-20T14:00:00", duration: "120 minutes", location: "Board Room", category: "meeting", status: "completed", description: "Quarterly performance review with management team." },
+            { id: 5, title: "Website Launch", date: "2023-09-15T09:00:00", duration: "All day", location: "Remote", category: "task", status: "completed", description: "Deploy new company website and monitor for issues." },
+            { id: 6, title: "Training Session", date: "2023-09-10T13:30:00", duration: "90 minutes", location: "Training Room B", category: "meeting", status: "completed", description: "New software training for the marketing team." }
+        ];
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        function renderEvents(eventsToRender) {
+            const container = document.getElementById('eventsContainer');
+            if (eventsToRender.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No events found</h3><p>Try adjusting your search or filter criteria</p></div>`;
+                return;
+            }
+
+            container.innerHTML = eventsToRender.map(event => `
+                <div class="event-card">
+                    <div class="event-header">
+                        <div>
+                            <div class="event-title">${event.title}</div>
+                            <div class="event-date">${formatDate(event.date)}</div>
+                        </div>
+                        <div class="event-status status-${event.status}">${event.status.charAt(0).toUpperCase() + event.status.slice(1)}</div>
+                    </div>
+
+                    <div class="event-body">
+                        <div class="event-detail"><i class="fas fa-clock"></i> Duration: ${event.duration}</div>
+                        ${event.location ? `<div class="event-detail"><i class="fas fa-map-marker-alt"></i> Location: ${event.location}</div>` : ''}
+                        <div class="event-detail"><i class="fas fa-tag"></i> Category: ${event.category}</div>
+                        <div class="event-description">${event.description}</div>
+                    </div>
+
+                    <div class="event-actions">
+                        <button class="btn-outline"><i class="fas fa-redo"></i> Reschedule</button>
+                        <button class="btn-outline"><i class="fas fa-info-circle"></i> Details</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterEvents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            const filtered = events.filter(event => {
+                const matchSearch = event.title.toLowerCase().includes(searchTerm) || event.description.toLowerCase().includes(searchTerm);
+                const matchStatus = statusFilter === "all" || event.status === statusFilter;
+                const matchCategory = categoryFilter === "all" || event.category === categoryFilter;
+                return matchSearch && matchStatus && matchCategory;
+            });
+
+            renderEvents(filtered);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderEvents(events);
+            document.getElementById("searchInput").addEventListener("input", filterEvents);
+            document.getElementById("statusFilter").addEventListener("change", filterEvents);
+            document.getElementById("categoryFilter").addEventListener("change", filterEvents);
+        });
+
+
+
+        function goToDashboard() {
+            window.location.href = "dashboard.html"; // adjust path if needed
+        }
+
+
+
+
+    </script>
 </body>
 </html>
