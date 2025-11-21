@@ -7,19 +7,37 @@ const modal = document.createElement("div");
 modal.id = "taskModal";
 modal.innerHTML = `
   <div class="task-modal-content">
-    <h3 id="modalDateTitle">Tasks for </h3>
-    <div id="taskList" style="margin-top: 10px;"></div>
-    ${
-      isAdmin
-        ? `
-      <div id="taskInputContainer" style="margin-top:15px;">
-        <input type="text" id="newTaskInput" placeholder="Enter new task" class="task-input">
-        <button id="addTaskBtn" class="task-btn">Add Task</button>
+    <h3 id="modalDateTitle"></h3>
+    <div id="taskDetails">
+      <div class="time-selection">
+        <label for="startTime">Start Time:</label>
+        <select id="startTime" class="time-select"></select>
       </div>
-      `
-        : ""
-    }
-    <button id="closeModalBtn" class="close-btn">Close</button>
+      <div class="time-selection">
+        <label for="endTime">End Time:</label>
+        <select id="endTime" class="time-select"></select>
+      </div>
+      <div class="event-name">
+        <label for="eventName">Event Name:</label>
+        <input type="text" id="eventName" placeholder="Enter event name">
+      </div>
+      <div class="notes">
+        <textarea id="eventNotes" placeholder="Enter notes..."></textarea>
+      </div>
+      <div class="participants">
+        <label for="participants">Participants:</label>
+        <select id="participants">
+          <option value="" disabled selected>Select a participant</option>
+          <option value="user1">User 1</option>
+          <option value="user2">User 2</option>
+          <option value="user3">User 3</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button id="saveTaskBtn" class="task-btn">Save</button>
+      <button id="cancelModalBtn" class="task-btn cancel-btn">Cancel</button>
+    </div>
   </div>
 `;
 document.body.appendChild(modal);
@@ -37,14 +55,19 @@ style.textContent = `
     z-index: 9999;
   }
 
+  #modalDateTitle {
+    margin-bottom: 25px;
+  }
+
   .task-modal-content {
     background: white;
     color: #333;
     padding: 20px;
     border-radius: 10px;
-    width: 350px;
-    max-height: 80vh;
+    width: 400px;
+    max-height: 90vh;
     overflow-y: auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
 
   body.dark .task-modal-content {
@@ -52,7 +75,17 @@ style.textContent = `
     color: #eee;
   }
 
-  .task-input {
+  .time-selection, .event-name, .notes, .participants {
+    margin-bottom: 15px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  input[type="text"], textarea, select {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
@@ -60,75 +93,105 @@ style.textContent = `
     background: white;
     color: #333;
   }
-
-  body.dark .task-input {
+  
+  body.dark input, body.dark textarea, body.dark select {
     background: #333;
     border-color: #555;
     color: #eee;
   }
 
+  textarea {
+    height: 80px;
+    resize: vertical;
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
   .task-btn {
-    margin-top: 10px;
     background: #4267b2;
     color: white;
     border: none;
-    padding: 8px 12px;
+    padding: 10px 15px;
     border-radius: 6px;
     cursor: pointer;
+    margin-left: 10px;
   }
 
-  .close-btn {
-    margin-top: 15px;
+  .cancel-btn {
     background: #999;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    width: 100%;
   }
 
   body.dark .task-btn {
     background: #5b8dfc;
   }
 
-  body.dark .close-btn {
+  body.dark .cancel-btn {
     background: #666;
   }
 `;
 document.head.appendChild(style);
 
-function openTaskModal(dateKey) {
-  const modalDateTitle = document.getElementById("modalDateTitle");
-  const taskList = document.getElementById("taskList");
-  modalDateTitle.textContent = `Tasks for ${dateKey}`;
-  taskList.innerHTML = "";
-  const tasks = tasksByDate[dateKey] || [];
-  if (tasks.length === 0) {
-    taskList.innerHTML = `<p style="font-style:italic;">No tasks yet.</p>`;
-  } else {
-    tasks.forEach(task => {
-      const p = document.createElement("p");
-      p.textContent = "• " + task;
-      taskList.appendChild(p);
+function populateTimeDropdowns() {
+    const timeSelectors = ['startTime', 'endTime'];
+    
+    timeSelectors.forEach(id => {
+        const select = document.getElementById(id);
+        
+        for (let i = 0; i < 24; i++) {
+            const hour = i % 12 === 0 ? 12 : i % 12;
+            const ampm = i < 12 ? 'AM' : 'PM';
+            
+            const time_hour = `${hour}:00 ${ampm}`;
+            let option = document.createElement('option');
+            option.value = time_hour;
+            option.textContent = time_hour;
+            select.appendChild(option);
+
+            const time_half = `${hour}:30 ${ampm}`;
+            option = document.createElement('option');
+            option.value = time_half;
+            option.textContent = time_half;
+            select.appendChild(option);
+        }
     });
-  }
-  modal.style.display = "flex";
-  if (isAdmin) {
-    document.getElementById("addTaskBtn").onclick = () => {
-      const input = document.getElementById("newTaskInput");
-      const newTask = input.value.trim();
-      if (newTask !== "") {
-        if (!tasksByDate[dateKey]) tasksByDate[dateKey] = [];
-        tasksByDate[dateKey].push(newTask);
-        input.value = "";
-        openTaskModal(dateKey);
-      }
-    };
-  }
 }
 
-document.getElementById("closeModalBtn").onclick = () => {
+function openTaskModal(dateKey) {
+  const modalDateTitle = document.getElementById("modalDateTitle");
+  
+  const date = new Date(dateKey);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  modalDateTitle.textContent = date.toLocaleDateString('en-US', options);
+
+  const task = tasksByDate[dateKey];
+  if (task) {
+    document.getElementById("startTime").value = task.startTime;
+    document.getElementById("endTime").value = task.endTime;
+    document.getElementById("eventName").value = task.eventName;
+    document.getElementById("eventNotes").value = task.notes;
+    document.getElementById("participants").value = task.participants;
+  }
+
+  modal.style.display = "flex";
+
+  document.getElementById("saveTaskBtn").onclick = () => {
+    const newTask = {
+      startTime: document.getElementById("startTime").value,
+      endTime: document.getElementById("endTime").value,
+      eventName: document.getElementById("eventName").value,
+      notes: document.getElementById("eventNotes").value,
+      participants: document.getElementById("participants").value,
+    };
+    tasksByDate[dateKey] = newTask;
+    modal.style.display = "none";
+  };
+}
+
+document.getElementById("cancelModalBtn").onclick = () => {
   modal.style.display = "none";
 };
 
@@ -136,7 +199,7 @@ calendarGrid.addEventListener("click", (e) => {
   if (e.target.classList.contains("day")) {
     const selectedDay = e.target.textContent;
     const currentMonthYear = document.getElementById("monthYear").textContent;
-    const dateKey = `${currentMonthYear} - ${selectedDay}`;
+    const dateKey = `${currentMonthYear.split(" ")[0]} ${selectedDay}, ${currentMonthYear.split(" ")[1]}`;
     openTaskModal(dateKey);
   }
 });
@@ -146,4 +209,6 @@ modal.addEventListener("click", (e) => {
     modal.style.display = "none";
   }
 });
+
+populateTimeDropdowns();
 ///hehe
