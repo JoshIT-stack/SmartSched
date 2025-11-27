@@ -1,313 +1,678 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Scheduler - Event History</title>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Smart Scheduler - Event History</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        :root {
-            --primary: #4267b2;
-            --primary-light: #5b84d7;
-            --bg: #eef2f7;
-            --text: #333;
-            --card: #fff;
-            --gray: #6c757d;
-            --success: #4bb543;
-            --danger: #dc3545;
-            --border-radius: 10px;
-            --box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif; /* match dashboard font */
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            background-color: var(--card);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        h1 {
-            color: var(--primary);
-            font-size: 28px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-        }
-
-        .search-box i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-        }
-
-        .filter-select {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            background-color: var(--card);
-            font-size: 16px;
-            min-width: 180px;
-        }
-
-        .events-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjusted min-width for cleaner look */
-            gap: 25px;
-        }
-
-        .event-card {
-            background-color: var(--card);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            /* Minimal card size */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .event-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .event-header {
-            padding: 15px 20px; /* Reduced padding */
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center; /* Center items vertically */
-        }
-
-        .event-title {
-            font-size: 18px; /* Slightly smaller font */
-            font-weight: 600;
-            margin-bottom: 0px; /* Removed margin */
-            color: var(--primary);
-        }
-
-        .event-date {
-            color: var(--gray);
-            font-size: 13px; /* Slightly smaller font */
-            margin-top: 5px;
-        }
-
-        .event-status {
-            padding: 5px 10px; /* Reduced padding */
-            border-radius: 20px;
-            font-size: 11px; /* Smaller font */
-            font-weight: 600;
-            white-space: nowrap; /* Keep status on one line */
-        }
-
-        .status-completed {
-            background-color: rgba(75, 181, 67, 0.1);
-            color: var(--success);
-        }
-
-        .status-cancelled {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-
-        /* Removed .event-body and its child styles as they are no longer needed */
-        /* .event-body { display: none; } */
-
-
-        .event-actions {
-            padding: 10px 20px; /* Reduced padding */
-            background-color: #f8f9fa;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: auto; /* Push actions to the bottom */
-            border-top: 1px solid #eee;
-        }
-
-        .btn-outline {
-            padding: 6px 12px; /* Reduced padding */
-            border: 1px solid var(--primary);
-            border-radius: var(--border-radius);
-            background: transparent;
-            color: var(--primary);
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-size: 13px; /* Smaller font */
-        }
-
-        .btn-outline i {
-            margin-right: 5px;
-        }
-
-        .btn-outline:hover {
-            background-color: rgba(66,103,178,0.1);
-        }
-
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 60px;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-
-        @media (max-width: 768px) {
-            .events-container {
-                grid-template-columns: 1fr;
+        <style>
+            :root {
+                --primary: #4267b2;
+                --primary-light: #5b84d7;
+                --bg: #eef2f7;
+                --text: #333;
+                --card: #fff;
+                --gray: #6c757d;
+                --success: #4bb543;
+                --danger: #dc3545;
+                --border-radius: 10px;
+                --box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             }
-        }
-    </style>
-</head>
 
-<body>
-    <div class="container">
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif; /* match dashboard font */
+            }
 
-        <header>
-            <h1><i class="fas fa-history"></i> Smart Scheduler - Event History</h1>
-            <button class="btn-outline" onclick="goToDashboard()" style="margin-left: 20px;">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </button>
-        </header>
+            body {
+                background-color: var(--bg);
+                color: var(--text);
+                padding: 20px;
+            }
 
-        <div class="controls">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search events...">
-                <i class="fas fa-search"></i>
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            header {
+                background-color: var(--card);
+                padding: 20px;
+                border-radius: var(--border-radius);
+                box-shadow: var(--box-shadow);
+                margin-bottom: 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            h1 {
+                color: var(--primary);
+                font-size: 28px;
+            }
+
+            .controls {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 25px;
+                flex-wrap: wrap;
+            }
+
+            .search-box {
+                flex: 1;
+                min-width: 250px;
+                position: relative;
+            }
+
+            .search-box input {
+                width: 100%;
+                padding: 12px 40px 12px 15px;
+                border: 1px solid #ddd;
+                border-radius: var(--border-radius);
+                font-size: 16px;
+            }
+
+            .search-box i {
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--gray);
+            }
+
+            .filter-select {
+                padding: 12px 15px;
+                border: 1px solid #ddd;
+                border-radius: var(--border-radius);
+                background-color: var(--card);
+                font-size: 16px;
+                min-width: 180px;
+            }
+
+            .events-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjusted min-width for cleaner look */
+                gap: 25px;
+            }
+
+            .event-card {
+                background-color: var(--card);
+                border-radius: var(--border-radius);
+                box-shadow: var(--box-shadow);
+                overflow: hidden;
+                transition: transform 0.3s ease;
+                /* Minimal card size */
+                display: flex;
+                flex-direction: column;
+            }
+
+            .event-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .event-header {
+                padding: 15px 20px; /* Reduced padding */
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center; /* Center items vertically */
+            }
+
+            .event-title {
+                font-size: 18px; /* Slightly smaller font */
+                font-weight: 600;
+                margin-bottom: 0px; /* Removed margin */
+                color: var(--primary);
+            }
+
+            .event-date {
+                color: var(--gray);
+                font-size: 13px; /* Slightly smaller font */
+                margin-top: 5px;
+            }
+
+
+
+            .event-actions {
+                padding: 10px 20px; /* Reduced padding */
+                background-color: #f8f9fa;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                margin-top: auto; /* Push actions to the bottom */
+                border-top: 1px solid #eee;
+            }
+
+            .btn-outline {
+                padding: 6px 12px; /* Reduced padding */
+                border: 1px solid var(--primary);
+                border-radius: var(--border-radius);
+                background: transparent;
+                color: var(--primary);
+                cursor: pointer;
+                transition: background-color 0.3s;
+                font-size: 13px; /* Smaller font */
+            }
+
+            .btn-outline i {
+                margin-right: 5px;
+            }
+
+            .btn-outline:hover {
+                background-color: rgba(66,103,178,0.1);
+            }
+
+            .empty-state {
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 60px 20px;
+                color: var(--gray);
+            }
+
+            .empty-state i {
+                font-size: 60px;
+                margin-bottom: 20px;
+                color: #ddd;
+            }
+
+            @media (max-width: 768px) {
+                .events-container {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+
+
+
+            /* ✅ Shared modal overlay */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+
+    /* ✅ Shared modal content */
+    .modal-content {
+        background: var(--card);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        max-width: 500px;
+        margin: 100px auto;
+        position: relative;
+        box-shadow: var(--box-shadow);
+    }
+
+    /* ✅ Close button */
+    .close-btn {
+        position: absolute;
+        top: 10px; right: 15px;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--gray);
+    }
+
+    .close-btn:hover {
+        color: var(--danger);
+    }
+
+
+
+
+
+
+
+
+
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+
+            <header>
+                <h1><i class="fas fa-history"></i> Smart Scheduler - Event History</h1>
+                <button class="btn-outline" onclick="goToDashboard()" style="margin-left: 20px;">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </header>
+
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search events...">
+                    <i class="fas fa-search"></i>
+                </div>
+
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">All Statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+
+
             </div>
 
-            <select class="filter-select" id="statusFilter">
-                <option value="all">All Statuses</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
-
-            <select class="filter-select" id="categoryFilter">
-                <option value="all">All Categories</option>
-                <option value="meeting">Meetings</option>
-                <option value="appointment">Appointments</option>
-                <option value="task">Tasks</option>
-                <option value="reminder">Reminders</option>
-            </select>
+            <div class="events-container" id="eventsContainer"></div>
         </div>
 
-        <div class="events-container" id="eventsContainer"></div>
-    </div>
+        <script>
+            let eventsData = []; // store events globally for filtering
 
-    <script>
-        const events = [
-            { id: 1, title: "Team Meeting", date: "2023-10-15T10:00:00", duration: "60 minutes", location: "Conference Room A", category: "meeting", status: "completed", description: "Weekly team sync to discuss project progress and upcoming tasks." },
-            { id: 2, title: "Project Deadline", date: "2023-10-10T17:00:00", duration: "All day", location: "Remote", category: "task", status: "completed", description: "Submit final project deliverables to the client." },
-            { id: 3, title: "Client Presentation", date: "2023-10-05T11:00:00", duration: "90 minutes", location: "Client Office", category: "meeting", status: "cancelled", description: "Product demo for potential client. Rescheduled due to client emergency." },
-            { id: 4, title: "Quarterly Review", date: "2023-09-20T14:00:00", duration: "120 minutes", location: "Board Room", category: "meeting", status: "completed", description: "Quarterly performance review with management team." },
-            { id: 5, title: "Website Launch", date: "2023-09-15T09:00:00", duration: "All day", location: "Remote", category: "task", status: "completed", description: "Deploy new company website and monitor for issues." },
-            { id: 6, title: "Training Session", date: "2023-09-10T13:30:00", duration: "90 minutes", location: "Training Room B", category: "meeting", status: "completed", description: "New software training for the marketing team." }
-        ];
-
-        function formatDate(dateString) {
-            // Updated options to include only date and time for a concise view
-            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            return new Date(dateString).toLocaleDateString('en-US', options);
-        }
-
-        function renderEvents(eventsToRender) {
-            const container = document.getElementById('eventsContainer');
-            if (eventsToRender.length === 0) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No events found</h3><p>Try adjusting your search or filter criteria</p></div>`;
-                return;
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return new Date(dateString).toLocaleDateString('en-US', options);
             }
 
-            // MODIFICATION HERE: ONLY keeping event-header and event-actions
-            container.innerHTML = eventsToRender.map(event => `
-                <div class="event-card">
-                    <div class="event-header">
-                        <div>
-                            <div class="event-title">${event.title}</div>
-                            <div class="event-date">${formatDate(event.date)}</div>
+            // REPLACE your existing renderEvents() with this:
+            function renderEvents(eventsToRender) {
+                const container = document.getElementById('eventsContainer');
+                if (eventsToRender.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No events found</h3><p>Try adjusting your search or filter criteria</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = eventsToRender.map((event, index) => `
+                    <div class="event-card" data-index="${index}">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-title">${event.title || '(No title)'}</div>
+                                <div class="event-date">${formatDate(event.date)}</div>
+                            </div>
                         </div>
-                        <div class="event-status status-${event.status}">${event.status.charAt(0).toUpperCase() + event.status.slice(1)}</div>
+
+                        
+                        <div class="event-actions">
+                            ${window.isAdmin ? `<button class="btn-outline reschedule-btn"><i class="fas fa-redo"></i> Reschedule</button>` : ''}
+                            <button class="btn-outline details-btn"><i class="fas fa-info-circle"></i> Details</button>
+                        </div>
+
+
+
                     </div>
+                `).join('');
+
+                // IMPORTANT: After rendering, attach click handlers
+                attachEventActions();
+            }
+
+
+
+
+
+                        function attachEventActions() {
+                    const cards = document.querySelectorAll('.event-card');
+
+                    cards.forEach((card) => {
+                        const index = parseInt(card.getAttribute('data-index'), 10);
+                        const rescheduleBtn = card.querySelector('.reschedule-btn');
+                        const detailsBtn = card.querySelector('.details-btn');
+
+                        if (rescheduleBtn) {
+                            rescheduleBtn.addEventListener('click', () => {
+                                const event = eventsData[index];
+                                handleReschedule(event);
+                            });
+                        }
+
+                        if (detailsBtn) {
+                            detailsBtn.addEventListener('click', () => {
+                                const event = eventsData[index];
+                                showDetails(event);
+                            });
+                        }
+                    });
+                }
+
+
+
+                
+
+                function handleReschedule(event) {
+
+
+                const select = document.getElementById("rescheduleParticipants");
+                const container = document.getElementById("rescheduleParticipantsContainer");
+                container.innerHTML = '';
+                select.querySelectorAll('option').forEach(opt => opt.style.display = 'block');
+                window.selectedParticipants.clear();
+
+
+                
+                setTimeout(() => {
+                if (event.participantIds) {
+                    event.participantIds.forEach(id => {
+                    const opt = select.querySelector(`option[value='${id}']`);
+                    if (opt) addReschedulePill(id, opt.textContent);
+                    });
+                }
+                }, 100); // delay to ensure dropdown is filled
+
+
+
+
+
+
+
+                const start = new Date(event.date);
+                const end = new Date(event.endDate || event.date); // fallback if no endDate
+
+                // Format date as YYYY-MM-DD
+                const dateOnly = start.toISOString().slice(0, 10);
+
+                // Format time as HH:MM
+                const startTime = start.toTimeString().slice(0, 5);
+                const endTime = end.toTimeString().slice(0, 5);
+
+                document.getElementById("rescheduleEventId").value = event.id;
+                console.log("✅ Setting rescheduleEventId:", event.id);
+                document.getElementById("rescheduleTitle").value = event.title || '';
+                document.getElementById("rescheduleDateOnly").value = dateOnly;
+                document.getElementById("rescheduleStartTime").value = startTime;
+                document.getElementById("rescheduleEndTime").value = endTime;
+                document.getElementById("rescheduleNotes").value = event.description || '';
+                document.getElementById("rescheduleModal").style.display = "block";
+            }
+
+
+
+
                     
-                    <div class="event-actions">
-                        <button class="btn-outline"><i class="fas fa-redo"></i> Reschedule</button>
-                        <button class="btn-outline"><i class="fas fa-info-circle"></i> Details</button>
-                    </div>
-                </div>
-            `).join('');
-        }
 
-        function filterEvents() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const categoryFilter = document.getElementById('categoryFilter').value;
+                    function showDetails(event) {
+                    document.getElementById("detailsTitle").textContent = event.title || "(No title)";
+                    document.getElementById("detailsDate").textContent = formatDate(event.date);
+                    document.getElementById("detailsDuration").textContent = event.duration || "";
+                    document.getElementById("detailsCategory").textContent = event.category || "";
+                    document.getElementById("detailsStatus").textContent = event.status || "";
+                    document.getElementById("detailsDescription").textContent = event.description || "";
 
-            const filtered = events.filter(event => {
-                const matchSearch = event.title.toLowerCase().includes(searchTerm) || event.description.toLowerCase().includes(searchTerm);
-                const matchStatus = statusFilter === "all" || event.status === statusFilter;
-                const matchCategory = categoryFilter === "all" || event.category === categoryFilter;
-                return matchSearch && matchStatus && matchCategory;
+                    document.getElementById("detailsModal").style.display = "block";
+                }
+
+
+
+
+
+
+
+
+            function filterEvents() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const statusFilter = document.getElementById('statusFilter').value;
+
+                const filtered = eventsData.filter(event => {
+                    const matchSearch =
+                        (event.title || '').toLowerCase().includes(searchTerm) ||
+                        (event.description || '').toLowerCase().includes(searchTerm);
+
+                    const matchStatus = statusFilter === 'all' || (event.status || '').toLowerCase() === statusFilter;
+
+                    return matchSearch && matchStatus;
+                });
+
+                renderEvents(filtered);
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // Step 1 — Fetch user role FIRST
+        fetch("/SmartSched/UserInfoServlet")
+            .then(res => res.json())
+            .then(data => {
+                window.isAdmin = data.role.toUpperCase() === "ADMIN";
+                console.log("Role loaded:", window.isAdmin ? "ADMIN" : "EMPLOYEE");
+
+                // Step 2 — After role is known, fetch all events
+                return fetch("/SmartSched/EventServlet");
+            })
+            .then(res => res.json())
+            .then(data => {
+                eventsData = data;
+                renderEvents(eventsData); // role is guaranteed ready
+            })
+            .catch(err => console.error("Error loading data:", err));
+
+        // Load participants (unchanged)
+        fetch("/SmartSched/users")
+            .then(res => res.json())
+            .then(data => populateParticipantOptions(data));
+
+        loadParticipantsIntoReschedule();
+
+        // Filters
+        document.getElementById("searchInput").addEventListener("input", filterEvents);
+        document.getElementById("statusFilter").addEventListener("change", filterEvents);
+
+    
+
+
+            const select = document.getElementById("rescheduleParticipants");
+            const container = document.getElementById("rescheduleParticipantsContainer");
+            const selectedParticipants = new Set();
+            window.selectedParticipants = selectedParticipants;
+
+            function addReschedulePill(value, text) {
+            if (window.selectedParticipants.has(value)) return;
+            window.selectedParticipants.add(value);
+
+            const pill = document.createElement("div");
+            pill.className = "participant-pill";
+            pill.dataset.value = value;
+            pill.innerHTML = `
+                <span>${text}</span>
+                <button class="remove-pill-btn">x</button>
+            `;
+
+            pill.querySelector(".remove-pill-btn").addEventListener("click", () => {
+                window.selectedParticipants.delete(value);
+                pill.remove();
+                select.querySelector(`option[value="${value}"]`).style.display = "block";
             });
 
-            renderEvents(filtered);
-        }
+            container.appendChild(pill);
+            select.querySelector(`option[value="${value}"]`).style.display = "none";
+            select.value = "";
+            }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            renderEvents(events);
-            document.getElementById("searchInput").addEventListener("input", filterEvents);
-            document.getElementById("statusFilter").addEventListener("change", filterEvents);
-            document.getElementById("categoryFilter").addEventListener("change", filterEvents);
+            select.addEventListener("change", () => {
+            const opt = select.options[select.selectedIndex];
+            if (opt.value) addReschedulePill(opt.value, opt.text);
+            });
+        
         });
 
-        function goToDashboard() {
-            window.location.href = "dashboard.html"; // adjust path if needed
-        }
-    </script>
-</body>
-</html>
+            function goToDashboard() {
+                window.location.href = "dashboard.html";
+            }
+
+            function submitReschedule() {
+                const id = document.getElementById("rescheduleEventId").value;
+                const title = document.getElementById("rescheduleTitle").value;
+                const dateOnly = document.getElementById("rescheduleDateOnly").value; // YYYY-MM-DD
+                const startTime = document.getElementById("rescheduleStartTime").value; // HH:MM
+                const endTime = document.getElementById("rescheduleEndTime").value;     // HH:MM
+                const notes = document.getElementById("rescheduleNotes").value;
+
+                // ✅ Combine date + time into ISO datetime strings
+                let startDateTime = dateOnly + "T" + startTime;
+                let endDateTime = dateOnly + "T" + endTime;
+
+                // If end time is earlier than start, assume it's next day
+                if (endTime < startTime) {
+                    const endDate = new Date(dateOnly);
+                    endDate.setDate(endDate.getDate() + 1); // add 1 day
+                    const nextDay = endDate.toISOString().slice(0, 10);
+                    endDateTime = nextDay + "T" + endTime;
+                }
+
+
+                const payload = new URLSearchParams();
+                payload.append("eventId", id);
+                console.log("✅ Sending eventId:", id);
+                payload.append("eventName", title);
+                payload.append("startDateTime", startDateTime);
+                payload.append("endDateTime", endDateTime);
+                payload.append("notes", notes);
+                payload.append("itemType", "MEETING");
+
+
+                
+                const participantIds = Array.from( window.selectedParticipants).join(",");
+                console.log("✅ Sending participantIds:", participantIds);
+
+
+
+
+                console.log("✅ Sending participantIds:", participantIds);
+                payload.append("participantIds", participantIds);
+
+
+
+                fetch("/SmartSched/EventServlet", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: payload.toString()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert("Event updated successfully!");
+                    document.getElementById("rescheduleModal").style.display = "none";
+                    location.reload(); // reload to see updated event
+                })
+                .catch(err => {
+                    console.error("Update failed:", err);
+                    alert("Failed to update event.");
+                });
+
+
+
+
+
+
+            }
+
+
+
+
+            function populateParticipantOptions(users) {
+                const select = document.getElementById("rescheduleParticipants");
+                select.innerHTML = "";
+
+                users.forEach(user => {
+                    const option = document.createElement("option");
+                    option.value = user.id;
+                    option.textContent = `${user.firstname} ${user.lastname}`; // ✅ full name
+                    select.appendChild(option);
+                });
+            }
+
+
+
+
+
+
+            function loadParticipantsIntoReschedule() {
+            fetch("/SmartSched/users")
+                .then(res => res.json())
+                .then(users => {
+                const select = document.getElementById("rescheduleParticipants");
+                if (!select) return;
+                select.innerHTML = '<option value="" disabled selected>Select a participant</option>';
+                users.forEach(u => {
+                    const opt = document.createElement("option");
+                    opt.value = u.id;
+                    opt.textContent = `${u.firstname} ${u.lastname}`;
+                    select.appendChild(opt);
+                });
+                })
+                .catch(err => console.error("Error loading reschedule participants:", err));
+            }
+
+
+
+
+
+
+
+
+
+
+        </script>
+
+
+    <!-- ✅ Reschedule Modal -->
+    <div id="rescheduleModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('rescheduleModal').style.display='none'">&times;</span>
+        <h2>Reschedule Event</h2>
+
+        <input type="hidden" id="rescheduleEventId">
+
+        <label for="rescheduleTitle">Title</label>
+        <input type="text" id="rescheduleTitle" style="width:100%; margin-bottom:10px; padding:8px;">
+
+                <label for="rescheduleDateOnly">Date</label>
+                <input type="date" id="rescheduleDateOnly" style="width:100%; margin-bottom:10px; padding:8px;">
+
+                <label for="rescheduleStartTime">Start Time</label>
+                <input type="time" id="rescheduleStartTime" style="width:100%; margin-bottom:10px; padding:8px;">
+
+                <label for="rescheduleEndTime">End Time</label>
+                <input type="time" id="rescheduleEndTime" style="width:100%; margin-bottom:15px; padding:8px;">
+
+
+                <div class="participants">
+                <label for="rescheduleParticipants">Participants:</label>
+                <div id="rescheduleParticipantsContainer" class="pills-container"></div>
+                <select id="rescheduleParticipants">
+                    <option value="" disabled selected>Select a participant</option>
+                </select>
+                </div>
+
+        <label for="rescheduleNotes">Notes</label>
+        <textarea id="rescheduleNotes" style="width:100%; margin-bottom:15px; padding:8px;"></textarea>
+
+        <button onclick="submitReschedule()" class="btn-outline" style="width:100%;">Save</button>
+    </div>
+    </div>
+
+    <!-- ✅ Details Modal -->
+    <div id="detailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('detailsModal').style.display='none'">&times;</span>
+        <h2>Event Details</h2>
+
+        <p><strong>Title:</strong> <span id="detailsTitle"></span></p>
+        <p><strong>Date:</strong> <span id="detailsDate"></span></p>
+        <p><strong>Duration:</strong> <span id="detailsDuration"></span></p>
+        <p><strong>Category:</strong> <span id="detailsCategory"></span></p>
+        <p><strong>Status:</strong> <span id="detailsStatus"></span></p>
+        <p><strong>Description:</strong></p>
+        <p id="detailsDescription" style="white-space:pre-line; background:#f8f9fa; padding:10px; border-radius:8px;"></p>
+    </div>
+    </div>
+
+
+
+
+    </body>
+    </html>
