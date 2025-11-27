@@ -9,15 +9,23 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
+import model.User;
+
 
 @WebServlet("/signup")
 public class SignupServlet extends HttpServlet {
   
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 1. Get values from HTML form
+        
         String username = request.getParameter("username");
+        String firstname = request.getParameter("firstname");
+        String lastname = request.getParameter("lastname");
+        String middlename = request.getParameter("middlename");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
+        String mobileNum = request.getParameter("mobile-number");
+        String emailAccount = request.getParameter("email-account");
         String q1 = request.getParameter("q1");
         String q2 = request.getParameter("q2");
         String q3 = request.getParameter("q3");
@@ -26,7 +34,7 @@ public class SignupServlet extends HttpServlet {
 
 
         // 2. (Optional) save to your Login class for now
-        User user = new User(username, password, confirmPassword, q1, q2, q3, q4, q5, "employee");
+        User user = new User(username, firstname, lastname, middlename, password, confirmPassword, mobileNum, emailAccount, q1, q2, q3, q4, q5, "employee");
         SignupLogic logic = new SignupLogic();
         String result = logic.register(user);
 
