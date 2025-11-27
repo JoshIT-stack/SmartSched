@@ -21,6 +21,30 @@ public class UserDao {
         }
     }
 
+    public User getUser(String username, String password) throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+            String sql = "SELECT id, username, firstname, lastname, role FROM users WHERE username=? AND password=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int id = rs.getInt("id");
+                String uname = rs.getString("username");
+                String fname = rs.getString("firstname");
+                String lname = rs.getString("lastname");
+                String role = rs.getString("role");
+                return new User(id, uname, fname, lname, role);
+            }
+        }
+        return null;
+    }
+
+
+
+
 public boolean insertUser(User user) throws Exception {
     Class.forName("com.mysql.cj.jdbc.Driver");
     try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
@@ -75,37 +99,29 @@ public boolean insertUser(User user) throws Exception {
 }
 
 
-    public List<User> getAllUsers() throws Exception {
-        List<User> users = new ArrayList<>();
-        Class.forName("com.mysql.cj.jdbc.Driver");
+public List<User> getAllUsers() throws Exception {
+    List<User> users = new ArrayList<>();
+    Class.forName("com.mysql.cj.jdbc.Driver");
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
-            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+        String sql = "SELECT id, username, firstname, lastname, role FROM users"; // adjust columns
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                User user = new User(
-                    rs.getString("username"),
-                    rs.getString("firstname"),
-                    rs.getString("lastname"),
-                    rs.getString("middlename"),
-                    rs.getString("password"),
-                    rs.getString("confirmPassword"),
-                    rs.getString("mobilenumber"),
-                    rs.getString("emailaccount"),
-                    rs.getString("role"),
-                    rs.getString("q1"),
-                    rs.getString("q2"),
-                    rs.getString("q3"),
-                    rs.getString("q4"),
-                    rs.getString("q5")
-                );
-                users.add(user);
-            }
+        while (rs.next()) {
+            User user = new User(
+                rs.getInt("id"),
+                rs.getString("username"),
+                rs.getString("firstname"),
+                rs.getString("lastname"),
+                rs.getString("role")
+            );
+            users.add(user);
         }
-        return users;
     }
+    return users;
+}
+
 
     public boolean validateUser(String username, String password) throws Exception{
     Class.forName("com.mysql.cj.jdbc.Driver");
@@ -230,4 +246,26 @@ public User getUserByUsername(String username) throws Exception {
 
 }
 
+public List<Integer> getAllEmployeeIds() throws SQLException, ClassNotFoundException {
+    List<Integer> employeeIds = new ArrayList<>();
+
+    // Load the JDBC driver
+    Class.forName("com.mysql.cj.jdbc.Driver");
+
+    String sql = "SELECT id FROM users";
+
+    // Use try-with-resources to ensure everything closes properly
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+         PreparedStatement pst = conn.prepareStatement(sql);
+         ResultSet rs = pst.executeQuery()) {
+
+        while (rs.next()) {
+            employeeIds.add(rs.getInt("id"));
+        }
+    }
+
+    return employeeIds;
 }
+
+}
+
