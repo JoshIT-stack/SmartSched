@@ -1,6 +1,7 @@
 package model;
 
 public class User{
+    private int id;
     private String username;
     private String password;
     private String firstName;
@@ -15,6 +16,12 @@ public class User{
     private String q3;
     private String q4;
     private String q5;
+
+
+    public User(){
+
+    }
+
 
     //constructors for creating account
     public User(String username, String firstName, String lastName, String middleName, String password, String confirmPassword, 
@@ -37,26 +44,38 @@ public class User{
         this.role = role;
     }
 
+    public User(String username, String password){
+    this.username=username;
+    this.password=password;
+    }
+
     // for retrieving data for profile
-    public User(String username, String firstName, String lastName, String middleName, String password,
-        String mobileNum, String emailAcct,
-    String q1,  String q2,  String q3,  String q4, String q5,  String role)
-    {
-        this.username=username;
-        this.password=password;
-        this.firstName=firstName;
-        this.lastName=lastName;
-        this.middleName=middleName;
-        this.mobileNum=mobileNum;
-        this.emailAcct=emailAcct;
-        this.q1=q1;
-        this.q2=q2;
-        this.q3=q3;
-        this.q4=q4;
-        this.q5=q5;
+ public User(String username, String firstName, String lastName, String middleName,
+                String password, String mobileNum, String emailAcct,
+                String q1, String q2, String q3, String q4, String q5, String role) {
+
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.middleName = middleName;
+        this.password = password;
+        this.mobileNum = mobileNum;
+        this.emailAcct = emailAcct;
+
+        this.q1 = q1;
+        this.q2 = q2;
+        this.q3 = q3;
+        this.q4 = q4;
+        this.q5 = q5;
+
         this.role = role;
     }
 
+
+    public User(int id, String username) {
+        this.id = id;
+        this.username = username;
+    }
 
     public String getMobileNumber(){
         return mobileNum;
@@ -118,4 +137,35 @@ public class User{
         public String getMiddleName(){
         return middleName;
     }
+
+    public void setId(int id){
+        this.id = id;
+    }
+
+    public int getId(){
+        return id;
+    }
+
+        public void setFirstname(String firstname){
+        this.firstName = firstname;
+    }
+
+        public void setUsername(String username){
+        this.username = username;
+    }
+
+        public void setLastname(String lastname){
+        this.lastName = lastname;
+    }
+
+
+    //displaying to selection of sendee
+        public User(int id, String username, String firstname, String lastname, String role) {
+        this.id = id;
+        this.username = username;
+        this.firstName = firstname;
+        this.lastName = lastname;
+        this.role=role;
+    }
+
 }
