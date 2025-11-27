@@ -1,5 +1,10 @@
-const isAdmin = true;
+
+
 let tasksByDate = {};
+
+let savedDates = new Set();
+
+
 
 const calendarGrid = document.getElementById("calendarGrid");
 
@@ -44,9 +49,6 @@ modal.innerHTML = `
         <div id="participantsContainer" class="pills-container"></div>
         <select id="participants">
           <option value="" disabled selected>Select a participant</option>
-          <option value="user1">User 1</option>
-          <option value="user2">User 2</option>
-          <option value="user3">User 3</option>
         </select>
       </div>
     </div>
@@ -56,6 +58,16 @@ modal.innerHTML = `
     </div>
   </div>
 `;
+
+
+function formatDateToInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+
 document.body.appendChild(modal);
 
 const style = document.createElement("style");
@@ -201,8 +213,97 @@ style.textContent = `
   body.dark .cancel-btn {
     background: #666;
   }
+
+
+
+  #summaryModal {
+  display: none;              /* hidden by default */
+  position: fixed;            /* overlay entire viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); /* semi-transparent backdrop */
+  display: flex;              /* use flexbox for centering */
+  justify-content: center;    /* horizontal center */
+  align-items: center;        /* vertical center */
+  z-index: 10000;             /* above dashboard */
+}
+
+.summary-modal-content {
+  background: var(--card);
+  color: var(--text);
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+body.dark .summary-modal-content {
+  background: #222;
+  color: #eee;
+}
+
+
+
 `;
 document.head.appendChild(style);
+
+function loadParticipantsInto(selectId) {
+  fetch("/SmartSched/users")
+    .then(response => response.json())
+    .then(users => {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      select.innerHTML = '<option value="" disabled selected>Select a participant</option>';
+      users.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent =  `${u.firstname} ${u.lastname}`;
+        select.appendChild(opt);
+      });
+    })
+    .catch(err => console.error("Error loading users into " + selectId, err));
+}
+
+
+// Call once when page loads
+window.addEventListener("DOMContentLoaded", () => {
+
+  loadSavedDates();
+  loadParticipantsInto("participants");          // for event modal
+  loadParticipantsInto("scheduleParticipants");  // for schedule modal
+  loadParticipantsInto("taskParticipants");      // for task modal
+});
+
+
+
+
+
+
+
+function loadSavedDates() {
+  fetch("/SmartSched/SavedDatesServlet")
+    .then(res => res.json())
+    .then(dateList => {
+
+      savedDates = new Set();
+      dateList.forEach(dateStr => {
+        const d = new Date(dateStr);
+        const key = formatDateToInputValue(d);
+        savedDates.add(key);
+      });
+
+      console.log("✅ Converted savedDates:", Array.from(savedDates));
+      renderCalendar(); // re-render with highlights
+    })
+    .catch(err => console.error("Error loading saved dates:", err));
+}
+
+
+
 
 function openTaskModal(dateKey) {
   const modalDateTitle = document.getElementById("modalDateTitle");
@@ -296,21 +397,92 @@ function openTaskModal(dateKey) {
     }
 
   }
-
+  // ✅ Show modal
   modal.style.display = "flex";
 
-  document.getElementById("saveTaskBtn").onclick = () => {
-    const newTask = {
-      startTime: document.getElementById("startTime").value,
-      endTime: document.getElementById("endTime").value,
-      eventName: document.getElementById("eventName").value,
-      notes: document.getElementById("eventNotes").value,
-      participants: Array.from(selectedParticipants),
+  // ✅ Cancel button logic (placed immediately after showing modal)
+  const cancelBtn = modal.querySelector("#cancelModalBtn");
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      modal.style.display = "none";
     };
-    tasksByDate[dateKey] = newTask;
-    modal.style.display = "none";
+  }
+
+  // ✅ Click outside to close
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+  // ✅ Save button logic
+  document.getElementById("saveTaskBtn").onclick = () => {
+    const dateObj = new Date(dateKey);
+    const dateStr = formatDateToInputValue(dateObj);
+
+    function toIsoDateTime(dateStr, timeStr) {
+      const [time, ampm] = timeStr.split(" ");
+      let [hour, minute] = time.split(":").map(Number);
+      if (ampm === "PM" && hour !== 12) hour += 12;
+      if (ampm === "AM" && hour === 12) hour = 0;
+      return `${dateStr}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    }
+
+    const startTimeVal = document.getElementById("startTime").value;
+    const endTimeVal = document.getElementById("endTime").value;
+
+    const startDateTime = toIsoDateTime(dateStr, startTimeVal);
+    const endDateTime = toIsoDateTime(dateStr, endTimeVal);
+
+    console.log("startTime:", startTimeVal);
+    console.log("endTime:", endTimeVal);
+    console.log("startDateTime:", startDateTime);
+    console.log("endDateTime:", endDateTime);
+
+    const eventName = document.getElementById("eventName").value;
+    const notes = document.getElementById("eventNotes").value;
+    const participantIds = Array.from(selectedParticipants).join(",");
+
+    const data = new URLSearchParams();
+    data.append("itemType", "EVENT");
+    data.append("eventName", eventName);
+    data.append("startDateTime", startDateTime);
+    data.append("endDateTime", endDateTime);
+    data.append("notes", notes);
+    data.append("createdByUserId", "1");
+    data.append("participantIds", participantIds);
+
+    fetch("/SmartSched/EventServlet", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: data
+    })
+    .then(response => response.text().then(text => {
+      console.log("Server response:", text);
+      if (response.ok) {
+        alert("✅ Event saved successfully!");
+      } else {
+        alert("⚠️ Failed to save event.\n" + text);
+      }
+      modal.style.display = "none"; // close modal after response
+    }))
+    .catch(err => {
+      console.error("Error saving event:", err);
+      alert("⚠️ Server error while saving event.");
+      modal.style.display = "none";
+    });
   };
 }
+
+
+
+
+
+
+
+
 
 function openScheduleModal(dateKey) {
   const scheduleModal = document.createElement("div");
@@ -337,9 +509,6 @@ function openScheduleModal(dateKey) {
         <div id="scheduleParticipantsContainer" class="pills-container"></div>
         <select id="scheduleParticipants">
           <option value="" disabled selected>Select an employee</option>
-          <option value="user1">User 1</option>
-          <option value="user2">User 2</option>
-          <option value="user3">User 3</option>
         </select>
       </div>
       <div class="modal-buttons">
@@ -348,58 +517,23 @@ function openScheduleModal(dateKey) {
       </div>
     </div>
   `;
-  document.body.appendChild(scheduleModal);
+document.body.appendChild(scheduleModal);
+loadParticipantsInto("scheduleParticipants");
 
-  const scheduleStyle = document.createElement("style");
-  scheduleStyle.textContent = `
-    #scheduleModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-    }
-    .schedule-modal-content {
-      background: white;
-      color: #333;
-      padding: 20px;
-      border-radius: 10px;
-      width: 450px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-    body.dark .schedule-modal-content {
-        background: #222;
-        color: #eee;
-    }
-    #scheduleModalDateTitle {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .date-range {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    .date-range label {
-      margin-right: 5px;
-    }
-    .date-range input[type="date"] {
-        width: 45%;
-    }
-  `;
-  document.head.appendChild(scheduleStyle);
-  
-  const scheduleModalDateTitle = document.getElementById("scheduleModalDateTitle");
-  const date = new Date(dateKey);
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  scheduleModalDateTitle.textContent = "Create Schedule for " + date.toLocaleDateString('en-US', options);
+// ✅ Use Date object directly instead of splitting strings
+const date = new Date(dateKey);
 
-  document.getElementById('startDate').valueAsDate = date;
-  document.getElementById('endDate').valueAsDate = date;
+const scheduleModalDateTitle = document.getElementById("scheduleModalDateTitle");
+const options = { year: 'numeric', month: 'long', day: 'numeric' };
+scheduleModalDateTitle.textContent = "Create Schedule for " + date.toLocaleDateString('en-US', options);
+
+// ✅ show the modal centered
+
+// ✅ pre-fill start/end date inputs
+document.getElementById('startDate').value = formatDateToInputValue(date);
+document.getElementById('endDate').value = formatDateToInputValue(date);
+
+
 
 
   function populateScheduleTimeDropdowns() {
@@ -459,19 +593,53 @@ function openScheduleModal(dateKey) {
       }
   });
 
-  scheduleModal.style.display = "flex";
+    scheduleModal.style.display = "flex";
 
-  document.getElementById("saveScheduleBtn").onclick = () => {
-    // Logic to save schedule will be added here
-    console.log(Array.from(selectedParticipants));
-    scheduleModal.style.display = "none";
-    document.body.removeChild(scheduleModal);
-  };
+    const cancelBtn = scheduleModal.querySelector("#cancelScheduleModalBtn");
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        scheduleModal.style.display = "none";
+        document.body.removeChild(scheduleModal);
+      };
+    }
 
-  document.getElementById("cancelScheduleModalBtn").onclick = () => {
-    scheduleModal.style.display = "none";
-    document.body.removeChild(scheduleModal);
-  };
+    scheduleModal.addEventListener("click", (e) => {
+      if (e.target === scheduleModal) {
+        scheduleModal.style.display = "none";
+        document.body.removeChild(scheduleModal);
+      }
+    });
+
+
+
+document.getElementById("saveScheduleBtn").onclick = () => {
+  
+  const data = new URLSearchParams();
+  data.append("startDate", document.getElementById("startDate").value);
+  data.append("endDate", document.getElementById("endDate").value);
+  data.append("shiftStart", document.getElementById("shiftStart").value);
+  data.append("shiftEnd", document.getElementById("shiftEnd").value);
+  Array.from(selectedParticipants).forEach(p => data.append("employees", p));
+
+
+  fetch("/SmartSched/ScheduleServlet", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  body: data
+})
+
+  
+  .then(res => {
+    if (res.ok) alert("✔ Schedule saved!");
+    else alert("❌ Failed to save schedule");
+  })
+  .catch(err => console.error("Schedule save error:", err));
+
+  scheduleModal.style.display = "none";
+  document.body.removeChild(scheduleModal);
+};
   
   scheduleModal.addEventListener("click", (e) => {
     if (e.target === scheduleModal) {
@@ -479,8 +647,9 @@ function openScheduleModal(dateKey) {
       document.body.removeChild(scheduleModal);
     }
   });
-}
 
+}
+  
 function openTaskCreatorModal(dateKey) {
   const taskCreatorModal = document.createElement("div");
   taskCreatorModal.id = "taskCreatorModal";
@@ -492,9 +661,7 @@ function openTaskCreatorModal(dateKey) {
         <div id="taskParticipantsContainer" class="pills-container"></div>
         <select id="taskParticipants">
           <option value="" disabled selected>Select an employee</option>
-          <option value="user1">User 1</option>
-          <option value="user2">User 2</option>
-          <option value="user3">User 3</option>
+
         </select>
       </div>
       <div class="time-selection">
@@ -514,6 +681,7 @@ function openTaskCreatorModal(dateKey) {
     </div>
   `;
   document.body.appendChild(taskCreatorModal);
+  loadParticipantsInto("taskParticipants");
 
   const taskCreatorStyle = document.createElement("style");
   taskCreatorStyle.textContent = `
@@ -575,6 +743,31 @@ function openTaskCreatorModal(dateKey) {
         line-height: 20px;
         text-align: center;
     }
+
+    #summaryModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+.summary-modal-content {
+  background: white;
+  color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+body.dark .summary-modal-content {
+  background: #222;
+  color: #eee;
+}
+
   `;
   document.head.appendChild(taskCreatorStyle);
   
@@ -657,17 +850,56 @@ function openTaskCreatorModal(dateKey) {
 
   taskCreatorModal.style.display = "flex";
 
-  document.getElementById("saveTasksBtn").onclick = () => {
-    const tasks = [];
-    document.querySelectorAll('.task-list-item span').forEach(item => {
-        tasks.push(item.textContent);
+      // Cancel button
+    const cancelBtn = taskCreatorModal.querySelector("#cancelTaskCreatorModalBtn");
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        taskCreatorModal.style.display = "none";
+        document.body.removeChild(taskCreatorModal);
+      };
+    }
+
+    // Click outside to close
+    taskCreatorModal.addEventListener("click", (e) => {
+      if (e.target === taskCreatorModal) {
+        taskCreatorModal.style.display = "none";
+        document.body.removeChild(taskCreatorModal);
+      }
     });
-    // Logic to save tasks will be added here
-    console.log(tasks); // For debugging
-    console.log(Array.from(selectedParticipants));
-    taskCreatorModal.style.display = "none";
-    document.body.removeChild(taskCreatorModal);
-  };
+
+document.getElementById("saveTasksBtn").onclick = () => {
+
+  const tasks = [];
+  document.querySelectorAll('.task-list-item span')
+    .forEach(item => tasks.push(item.textContent));
+
+const data = new URLSearchParams();
+data.append("date", formatDateToInputValue(new Date(dateKey)));
+data.append("taskTime", document.getElementById("taskTime").value);
+
+tasks.forEach(t => data.append("tasks", t));
+Array.from(selectedParticipants).forEach(p => data.append("employees", p));
+
+fetch("/SmartSched/TaskServlet", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  body: data
+})
+
+
+
+  .then(res => {
+    if (res.ok) alert("✔ Tasks saved!");
+    else alert("❌ Failed to save tasks");
+  })
+  .catch(err => console.error("Task save error:", err));
+
+  taskCreatorModal.style.display = "none";
+  document.body.removeChild(taskCreatorModal);
+};
+
 
   document.getElementById("cancelTaskCreatorModalBtn").onclick = () => {
     taskCreatorModal.style.display = "none";
@@ -682,29 +914,58 @@ function openTaskCreatorModal(dateKey) {
   });
 }
 
-function openOptionsModal(dateKey) {
-    const optionsModalDateTitle = document.getElementById("optionsModalDateTitle");
-    const date = new Date(dateKey);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    optionsModalDateTitle.textContent = date.toLocaleDateString('en-US', options);
-    
-    optionsModal.style.display = "flex";
 
-    document.getElementById("createScheduleBtn").onclick = () => {
+function openOptionsModal(dateKey) {
+  const optionsModalDateTitle = document.getElementById("optionsModalDateTitle");
+  const date = new Date(dateKey);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  optionsModalDateTitle.textContent = date.toLocaleDateString('en-US', options);
+
+  optionsModal.style.display = "flex";
+
+  const cancelBtn = document.getElementById("cancelOptionsModalBtn");
+if (cancelBtn) {
+  cancelBtn.onclick = () => {
+    optionsModal.style.display = "none";
+  };
+}
+
+optionsModal.addEventListener("click", (e) => {
+  if (e.target === optionsModal) {
+    optionsModal.style.display = "none";
+  }
+});
+
+
+  // ✅ Delay binding until modal is visible and DOM is ready
+  setTimeout(() => {
+    const scheduleBtn = document.getElementById("createScheduleBtn");
+    const taskBtn = document.getElementById("createTaskBtn");
+    const eventBtn = document.getElementById("createEventBtn");
+
+    if (scheduleBtn) {
+      scheduleBtn.onclick = () => {
         optionsModal.style.display = "none";
         openScheduleModal(dateKey);
-    };
+      };
+    }
 
-    document.getElementById("createTaskBtn").onclick = () => {
+    if (taskBtn) {
+      taskBtn.onclick = () => {
         optionsModal.style.display = "none";
         openTaskCreatorModal(dateKey);
-    };
+      };
+    }
 
-    document.getElementById("createEventBtn").onclick = () => {
+    if (eventBtn) {
+      eventBtn.onclick = () => {
         optionsModal.style.display = "none";
         openTaskModal(dateKey);
-    };
+      };
+    }
+  }, 0); // ✅ ensures DOM is ready
 }
+
 
 
 document.getElementById("cancelModalBtn").onclick = () => {
@@ -715,14 +976,12 @@ document.getElementById("cancelOptionsModalBtn").onclick = () => {
   optionsModal.style.display = "none";
 };
 
-calendarGrid.addEventListener("click", (e) => {
-  if (e.target.classList.contains("day")) {
-    const selectedDay = e.target.textContent;
-    const currentMonthYear = document.getElementById("monthYear").textContent;
-    const dateKey = `${currentMonthYear.split(" ")[0]} ${selectedDay}, ${currentMonthYear.split(" ")[1]}`;
-    openOptionsModal(dateKey);
-  }
-});
+
+
+
+
+
+
 
 modal.addEventListener("click", (e) => {
   if (e.target === modal) {
@@ -734,4 +993,5 @@ optionsModal.addEventListener("click", (e) => {
     if (e.target === optionsModal) {
         optionsModal.style.display = "none";
     }
-});
+}
+);
