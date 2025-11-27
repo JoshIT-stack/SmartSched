@@ -1,39 +1,920 @@
-class Login{
- 
-    private String name;
-    private String password;
-    private String role;
-
-    public void setName(String name){ 
-        if(name != null && !name.isEmpty()){
-        this.name = name;
-        } 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartSched Dashboard</title>
+  <style>
+    :root {
+      /* LIGHT THEME */
+      --primary: #4267b2;
+      --primary-light: #5b84d7;
+      --bg: #eef2f7;
+      --text: #333;
+      --card: #fff;
+      --hover: #cddfff;
+      --calendar-text: #1a1a1a;
+      --mode-hover: rgba(255, 255, 255, 0.2);
+      --border: #c5c5c5;
     }
 
-    public String getName(){
-        return name;
+    body.dark {
+      /* DARK THEME */
+      --primary: #1e1e1e;
+      --primary-light: #2a2a2a;
+      --bg: #121212;
+      --text: #e2e2e2;
+      --card: #1e1e1e;
+      --hover: #2a2a2a;
+      --calendar-text: #f0f0f0;
+      --mode-hover: rgba(255, 255, 255, 0.1);
+      --border: #444;
     }
 
-    public void setPassword(String password){
-        if(password != null && !password.isEmpty()){
-            this.password = password;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    public String getPassword(){
-        return password;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s, color 0.3s;
     }
 
+    .dashboard {
+      width: 90%;
+      max-width: 1000px;
+      height: 85vh;
+      display: flex;
+      background-color: var(--card);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
 
-    public boolean verifylogin(String user, String pass){ 
-        boolean result = this.name.equals("admin") && this.password.equals("12345");
-        if(result){
-            System.out.println("Welcome user: " +name);
-        }
-        else{
-            System.out.println("Login Failed, username or password incorrect!");
-        }
+    .sidebar {
+      width: 240px;
+      background-color: var(--primary);
+      color: white;
+      padding: 25px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: background-color 0.3s;
+    }
 
-        return result;
-     }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+      background-color: var(--primary-light);
+      transition: background-color 0.3s;
+    }
+
+    .sidebar-link:hover {
+      background-color: #739ae5;
+    }
+
+    .logout-link:hover {
+      background-color: #ff4d4d;
+    }
+
+    .mode-toggle {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: auto;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: background-color 0.3s, transform 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .mode-toggle:hover {
+      background-color: var(--mode-hover);
+      transform: scale(1.05);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 25px;
+      background-color: var(--bg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.3s;
+    }
+
+    .main-content h2 {
+      margin-bottom: 15px;
+    }
+
+    .calendar {
+      width: 90%;
+      max-width: 600px;
+      background-color: var(--card);
+      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .nav-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .nav-btn:hover {
+      background-color: var(--primary-light);
+      transform: scale(1.05);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+      color: var(--calendar-text);
+      transition: color 0.3s;
+    }
+
+    .day-name {
+      font-weight: bold;
+      background-color: #dbe4ff;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    body.dark .day-name {
+      background-color: #2a2a2a;
+      color: #f0f0f0;
+    }
+
+    .day,
+    .empty {
+      background-color: var(--bg);
+      height: 70px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .day:hover {
+      background-color: var(--hover);
+      cursor: pointer;
+    }
+
+    .today {
+      background-color: #cfe2ff;
+      border: 2px solid #5b84d7;
+      font-weight: bold;
+      color: #1a1a1a;
+    }
+
+    body.dark .today {
+      background-color: #2f4b8a;
+      border-color: #7299e2;
+      color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+
+      .sidebar-links {
+        flex-direction: row;
+        gap: 5px; 
+      }
+
+      .calendar {
+        width: 100%;
+      }
+
+    }
+/* Overlay backdrop */
+#summaryModal {
+  display: none; /* shown via JS */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6); /* darker backdrop for focus */
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in-out;
 }
+
+/* Modal content box */
+.summary-modal-content {
+  background: var(--card);
+  color: var(--text);
+  padding: 30px;
+  border-radius: 12px;
+  width: 450px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  transform: scale(0.95);
+  animation: popUp 0.25s ease forwards;
+}
+
+/* Title */
+.summary-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+/* Section headers */
+.summary-section {
+  margin-bottom: 20px;
+}
+
+.summary-section h4 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: var(--primary-light);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+}
+
+/* Entries */
+.summary-section p {
+  margin-bottom: 8px;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  background: rgba(0,0,0,0.03);
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+/* Buttons */
+.modal-buttons {
+  text-align: right;
+  margin-top: 15px;
+}
+
+#closeSummaryBtn {
+  background: #999;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#closeSummaryBtn:hover {
+  background: #777;
+}
+
+/* Dark mode adjustments */
+body.dark .summary-modal-content {
+  background: #1e1e1e;
+  color: #eee;
+}
+
+body.dark .summary-section p {
+  background: #2a2a2a;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popUp {
+  from { transform: scale(0.95); opacity: 0.8; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+
+
+
+#scheduleModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.schedule-modal-content {
+  margin: auto; /* ✅ centers the box */
+  width: 450px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+
+
+
+
+/* ✅ Modal backdrop for all modals */
+#taskModal,
+#optionsModal,
+#scheduleModal,
+#taskCreatorModal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* ✅ Modal content boxes */
+.task-modal-content,
+.options-modal-content,
+.schedule-modal-content,
+.task-creator-modal-content {
+  background: white;
+  color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin: auto; /* centers the box */
+}
+
+/* ✅ Modal title spacing */
+#modalDateTitle,
+#optionsModalDateTitle,
+#scheduleModalDateTitle,
+#taskCreatorModalDateTitle {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* ✅ Shared form layout */
+.time-selection,
+.event-name,
+.notes,
+.participants,
+.date-range,
+.task-input {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+}
+
+textarea {
+  height: 80px;
+  resize: vertical;
+}
+
+/* ✅ Pills for participants */
+.pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.participant-pill {
+  background: #e0e0e0;
+  color: #333;
+  border-radius: 15px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.remove-pill-btn {
+  background: none;
+  border: none;
+  color: #999;
+  margin-left: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ✅ Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.task-btn {
+  background: #4267b2;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.cancel-btn {
+  background: #999;
+}
+
+/* ✅ Dark mode support */
+body.dark .task-modal-content,
+body.dark .options-modal-content,
+body.dark .schedule-modal-content,
+body.dark .task-creator-modal-content {
+  background: #222;
+  color: #eee;
+}
+
+body.dark input,
+body.dark textarea,
+body.dark select {
+  background: #333;
+  border-color: #555;
+  color: #eee;
+}
+
+body.dark .participant-pill {
+  background: #555;
+  color: #eee;
+}
+
+body.dark .task-btn {
+  background: #5b8dfc;
+}
+
+body.dark .cancel-btn {
+  background: #666;
+}
+
+
+
+
+.popup {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  max-height: 75vh;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  padding: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hidden { display: none; }
+
+.popup-header h3 {
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+}
+
+.popup-header input {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  transition: background-color 0.3s, transform 0.2s;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: var(--hover);
+  transform: scale(1.02);
+}
+
+.notification-item h4 {
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+
+.popup-close {
+  align-self: center;
+  padding: 10px 20px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.popup-close:hover {
+  background-color: var(--primary-light);
+}
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.notification-content {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  width: 420px;
+  max-height: 75vh;
+  overflow-y: auto;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px; 
+} 
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div>
+        <h2>SMARTSCHED</h2>
+        <div class="sidebar-links">
+          <a href="profile" class="sidebar-link">Profile</a>
+          <a href="records.html" class="sidebar-link">Records</a>
+         <a href="#" id="notificationsLink" class="sidebar-link">Notifications</a>
+          <a href="login.html" class="sidebar-link logout-link">Logout</a>
+        </div>
+      </div>
+      <div class="mode-toggle" id="modeToggle">🌙 Dark Mode</div>
+    </aside>
+
+    <main class="main-content">
+      <h2>Calendar</h2>
+      <section class="calendar">
+        <div class="calendar-header">
+          <button class="nav-btn" id="prevMonth">&lt;</button>
+          <h3 id="monthYear">October 2025</h3>
+          <button class="nav-btn" id="nextMonth">&gt;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <div class="day-name">Sun</div>
+          <div class="day-name">Mon</div>
+          <div class="day-name">Tue</div>
+          <div class="day-name">Wed</div>
+          <div class="day-name">Thu</div>
+          <div class="day-name">Fri</div>
+          <div class="day-name">Sat</div>
+        </div>
+      </section>
+    </main>
+  </div>
+<script>
+  
+  
+  window.isAdmin = false; // default fallback
+
+  window.isAdmin;
+  fetch("/SmartSched/UserInfoServlet")
+    .then(res => res.json())
+    .then(data => {
+      window.isAdmin = data.role.toUpperCase() === "ADMIN";
+      console.log("✅ Role loaded:", data.role);
+    })
+    .catch(err => {
+      console.error("⚠️ Failed to load role:", err);
+    });
+
+
+
+
+
+</script>
+
+
+<script>
+  const monthYear = document.getElementById('monthYear');
+  const grid = document.getElementById('calendarGrid');
+  const prev = document.getElementById('prevMonth');
+  const next = document.getElementById('nextMonth');
+  const modeToggle = document.getElementById('modeToggle');
+  const body = document.body;
+
+  let date = new Date();
+
+  async function renderCalendar() {
+    console.log("✅ renderCalendar is running for", date.toDateString());
+
+    const calendarGrid = document.getElementById("calendarGrid");
+
+    
+    while (calendarGrid.children.length > 7) {
+      calendarGrid.removeChild(calendarGrid.lastChild);
+    }
+
+
+
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    monthYear.textContent = date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    let savedDates = new Set();
+    try {
+      const response = await fetch("SavedDatesServlet");
+      if (response.ok) {
+        const dateList = await response.json();
+        dateList.forEach(dateStr => savedDates.add(dateStr));
+      }
+    } catch (error) {
+      console.error("Error loading saved dates:", error);
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    for (let i = 0; i < firstDay; i++) {
+      const emptyCell = document.createElement("div");
+      emptyCell.classList.add("empty");
+      calendarGrid.appendChild(emptyCell);
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+      const fullDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const isSaved = savedDates.has(fullDate);
+      const isToday = fullDate === today;
+
+      const cell = document.createElement("div");
+      cell.classList.add("day");
+      if (isSaved) cell.style.border = "2px solid red";
+      if (isToday) cell.classList.add("today");
+
+      cell.textContent = day;
+
+      if (isSaved) {
+        cell.onclick = () => {
+          if (window.isAdmin) {
+            openOptionsModal(fullDate);
+          } else {
+            handleDayClick(fullDate);
+          }
+        };
+      } else {
+        if (window.isAdmin) {
+          cell.onclick = () => openOptionsModal(fullDate);
+        }
+      }
+
+      calendarGrid.appendChild(cell);
+    }
+  }
+
+  prev.onclick = () => {
+    date.setMonth(date.getMonth() - 1);
+    renderCalendar();
+  };
+
+  next.onclick = () => {
+    date.setMonth(date.getMonth() + 1);
+    renderCalendar();
+  };
+
+  modeToggle.onclick = () => {
+    body.classList.toggle('dark');
+    const darkMode = body.classList.contains('dark');
+    modeToggle.textContent = darkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+  };
+
+
+
+
+function showDaySummaryModal(dateKey, data) {
+
+    // ✅ Remove any existing modal first
+  const existing = document.getElementById("summaryModal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "summaryModal";
+  modal.style.display = "flex";
+  modal.style.position = "fixed";
+  modal.style.top = "0";
+  modal.style.left = "0";
+  modal.style.width = "100%";
+  modal.style.height = "100%";
+  modal.style.background = "rgba(0,0,0,0.5)";
+  modal.style.justifyContent = "center";
+  modal.style.alignItems = "center";
+  modal.style.zIndex = "10000";
+
+  modal.innerHTML = `
+    <div class="summary-modal-content">
+      <h3 class="summary-title">Summary for ${dateKey}</h3>
+
+      <div class="summary-section">
+        <h4>📌 Events</h4>
+        <div id="summaryEvents"></div>
+      </div>
+
+      <div class="summary-section">
+        <h4>📝 Tasks</h4>
+        <div id="summaryTasks"></div>
+      </div>
+
+      <div class="summary-section">
+        <h4>👥 Schedules</h4>
+        <div id="summarySchedules"></div>
+      </div>
+
+      <div class="modal-buttons">
+        <button id="closeSummaryBtn" class="task-btn cancel-btn">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const events = modal.querySelector("#summaryEvents");
+  const tasks = modal.querySelector("#summaryTasks");
+  const schedules = modal.querySelector("#summarySchedules");
+
+  events.innerHTML = "";
+  tasks.innerHTML = "";
+  schedules.innerHTML = "";
+
+  (data?.events || []).forEach(ev => {
+    events.innerHTML += `
+      <p><b>${ev.name}</b> (${ev.start} - ${ev.end})<br><i>${ev.notes || ""}</i></p>
+    `;
+  });
+
+  (data?.tasks || []).forEach(t => {
+    tasks.innerHTML += `
+      <p>${t.task} at ${t.time} (User ${t.userId})</p>
+    `;
+  });
+
+  (data?.schedules || []).forEach(s => {
+    schedules.innerHTML += `
+     <p>${s.shiftStart} - ${s.shiftEnd}</p>
+  `;
+  });
+
+  modal.querySelector("#closeSummaryBtn").onclick = () => {
+    modal.remove();
+  };
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.remove();
+  });
+
+  const escHandler = (e) => {
+    if (e.key === "Escape") {
+      modal.remove();
+      document.removeEventListener("keydown", escHandler);
+    }
+  };
+  document.addEventListener("keydown", escHandler);
+}
+
+
+
+      function handleDayClick(dateKey) {
+      fetch(`/SmartSched/DaySummaryServlet?date=${dateKey}`)
+        .then(res => res.json())
+        .then(data => {
+          console.log("Day Summary:", data);
+          showDaySummaryModal(dateKey, data);
+        })
+        .catch(err => {
+          console.error("Summary fetch error:", err);
+          alert("⚠️ Failed to load summary for this day.");
+        });
+    }
+
+
+
+
+
+
+  renderCalendar(); // ✅ Only call after window.isAdmin is set
+</script>
+  <script src="calendar-task.js"></script>
+ <!-- Notif gieben -->
+<div id="notificationPopup" class="popup hidden">
+  <div class="popup-header">
+    <h3>NOTIFICATIONS</h3>
+    <input type="text" id="searchInput" placeholder="Search sender..." />
+  </div>
+  <div id="notificationList" class="popup-list"></div>
+  <button id="closePopup" class="popup-close">Back to Dashboard</button>
+</div>
+<script src="notification.js"></script>
+
+
+
+
+
+
+</body>
+</html>
+
