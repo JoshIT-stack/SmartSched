@@ -49,3 +49,4 @@ document.querySelector('.sidebar-link[href="notification.html"]').onclick = (e) 
   e.preventDefault();
   showNotifications();
 };
+
